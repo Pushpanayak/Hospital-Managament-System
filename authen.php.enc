@@ -1,0 +1,43 @@
+﻿<?php 
+session_start();
+if(!isset($_SESSION['val'])){
+  exec("gpio -g mode 18 pwm && gpio pwm-ms && gpio pwmc 192 && gpio pwmr 2000");
+}
+function inicio(){
+	exec('gpio -g pwm 18 240');
+	}
+inicio();
+?>
+<html>
+
+<a href="2.php">Testar</a> 
+	
+<img src="https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=1MEdoDvBbcGL2GduaDEzzfn1CPWW3D64Bk">
+<br>
+1MEdoDvBbcGL2GduaDEzzfn1CPWW3D64Bk
+<div id="websocket">Monitorando o endereço 1MEdoDvBbcGL2GduaDEzzfn1CPWW3D64Bk e aguardando pagamento...</div>
+
+<script>
+var btcs = new WebSocket("wss://ws.blockchain.info/inv");
+btcs.onopen = function (){
+	btcs.send(JSON.stringify({"op":"addr_sub", "addr":"CGq13VmcHG1WFrEZEhyM2vX6t7eeqdp8cG"}));
+};
+btcs.onmessage = function (onmsg){
+	var response =JSON.parse(onmsg.data);
+	console.log(response);
+	var getOuts = response.x.out;
+	var countOuts = getOuts.length;
+	
+	for(i=0; i<countOuts; i++){
+		var outAdd = response.x.out[i].addr;
+		var address = "1MEdoDvBbcGL2GduaDEzzfn1CPWW3D64Bk";
+		if(outAdd == address){
+			var amount = response.x.out[i].value;
+			var calAmount = amount / 100000000;
+			document.getElementById("websocket").innerHTML = "Recebido: "+ calAmount+"BTC";
+			window.location.href = "2.php";
+		};
+	};
+};
+</script>
+</html>
